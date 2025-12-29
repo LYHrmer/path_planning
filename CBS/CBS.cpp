@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -109,8 +110,31 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
         if (cur.t >= maxT) continue; // 超过最大时间，跳过
 
         //拓展下一步（t+1）
-        
+        vector<Pos> nb = getNeighbors(grid, Pos{cur.x, cur.y});
+        for(const auto& p : nb){
+            State nxt{p.x, p.y, cur.t+1};
+            if(!visited[nxt]){
+                visited[nxt] = true;
+                parent[nxt] = cur;
+                q.push(nxt);
+            }
+        }
     }
+    
+    if(!found) return {}; //未找到路径返回空
+
+    // 回溯：从goalState回到起到
+    vector<Pos> rev;
+    State cur = goalState;
+    while (true){
+        rev.push_back(Pos{cur.x,cur.y});
+        if(cur.t == 0) break; //到达起点
+        cur = parent[cur];
+    }
+
+    //反转得到正向路径
+    reverse(rev.begin(), rev.end());
+    return rev;
 }
 
 int main(){
