@@ -175,7 +175,51 @@ vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
     bestG[s0] = 0;
     open.push(Node{s0,0,manhattan(start,goal)});
 
-    return {};
+    while (!open.empty())
+    {
+        Node cur = open.top(); open.pop();// 先读取栈open的栈顶元素赋值给cur，再将栈顶元素从栈中删除
+        State cs = cur.s;
+
+        // "懒惰删除"：如果弹出的g不是当前最优，跳过
+        if(cur.g != bestG[cs]) continue;
+
+        // 到达目标就结束（注意：此时 t 不一定最小，但 A*保证第一次出队目标就是最优）
+        if(cs.x == goal.x && cs.y == goal.y){
+            //回溯路径
+            vector<Pos> rev;
+            State p =cs;
+            while(true){
+                rev.push_back(Pos{p.x,p.y});
+                if(p.t ==0) break;
+                p = parent[p];
+            }
+            reverse(rev.begin(), rev.end());
+            return rev;
+        }
+
+        if (cs.t >= maxT) continue; // 超过最大时间，跳过
+
+        //拓展邻居（t+1）
+        vector<Pos> nb = getNeighbors(grid, Pos{cs.x, cs.y});
+        for(const auto& np : nb){
+            State ns{np.x, np.y, cs.t+1};
+            int ng = cur.g +1; //每步代价＋1
+
+            // 如果这个状态从没见过，或者找到更短的g，就更新
+            auto it = bestG.find(ns);
+            if(it == bestG.end() || ng < it->second){
+                bestG[ns] = ng;
+                parent[ns] = cs;
+
+                int h = manhattan(Pos{ns.x, ns.y}, goal);// 估计代价
+                int nf = ng + h;
+                open.push(Node{ns, ng, nf});//入栈
+            }
+        }
+    }
+    
+
+    return {}; 
 }
 
 int main(){
