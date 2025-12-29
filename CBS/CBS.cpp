@@ -124,7 +124,7 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
     
     if(!found) return {}; //未找到路径返回空
 
-    // 回溯：从goalState回到起到
+    // 回溯：从goalState回到起点
     vector<Pos> rev;
     State cur = goalState;
     while (true){
