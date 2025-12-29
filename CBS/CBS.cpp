@@ -155,19 +155,26 @@ int main(){
     grid.W = (int)grid.g[0].size();    // 列数=宽
 
 
-    Pos cur{0, 0};
+    Pos start{0,0};
+    Pos goal{9,4};
 
     cout << "Map:\n";
     grid.print();
     cout << "\n";
 
-    cout << "Current: (" << cur.x << "," << cur.y << ")\n";
-    vector<Pos> nb = getNeighbors(grid, cur);
+    // BFS 最大时间上限，先随便给个够大的（以后做 CBS 会用更聪明的 horizon）
+    int maxT = 50;
+    vector<Pos> path = spaceTimeBFS(grid, start, goal, maxT);
 
-    cout << "Neighbors (" << nb.size() << "):\n";
-    for (int i = 0; i < (int)nb.size(); i++) {
-        cout << "  (" << nb[i].x << "," << nb[i].y << ")\n";
+    if (path.empty()) {
+        cout << "No path within maxT=" << maxT << "\n";
+        return 0;
     }
 
+    cout << "Found path length=" << (int)path.size() << " (steps=" << (int)path.size()-1 << ")\n";
+    for (int t = 0; t < (int)path.size(); t++) {
+        cout << "t=" << t << " (" << path[t].x << "," << path[t].y << ")\n";
+    }
+    
     return 0;
 }
