@@ -1,0 +1,97 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+// 修正：结构体名统一为Pos（大写P），和main里一致
+struct Pos{
+    int x;
+    int y;
+
+    // C++ 运算符重载；以后可以直接写(a=b)
+    bool operator==(const Pos& other) const{
+        return x == other.x && y == other.y;
+    }
+};
+
+/* 网格地图
+   g 用vector<string>保存每一行
+   g[y][x] 访问第y行第x列的字符（修正坐标顺序）
+ */
+struct Grid{
+    int W;  // 宽（列数）
+    int H;  // 高（行数）
+    vector<string> g; // 地图字符
+
+    // 判断坐标是否在地图边界内
+    bool inBounds(int x, int y) const{
+        return 0 <= x && x < W && 0 <= y && y < H;
+    }
+
+    // 判断该位置是否可走（修正坐标访问：g[y][x]）
+    bool passable(int x, int y) const{
+        return inBounds(x, y) && g[y][x] != '#';
+    }
+
+    // 打印地图
+    void print() const{
+        for (int y = 0; y < H; y++){
+            cout << g[y] << "\n";
+        }
+    }
+};
+
+/* 生成下一步候选位置（4邻接+等待）
+    返回值是 vector<Pos>（动态数组）
+*/
+vector<Pos> getNeighbors(const Grid& grid, const Pos& cur){
+    //五个动作：上、下、左、右、等待
+    const int dx[5] = {1,-1,0,0,0};
+    const int dy[5] = {0,0,1,-1,0};
+
+    vector<Pos> result;
+    for (int k = 0; k < 5; k++){
+        int nx = cur.x + dx[k];
+        int ny = cur.y + dy[k];
+        if (grid.passable(nx,ny)){
+            result.push_back(Pos{nx,ny}); //花括号初试后一个Pos
+        }
+    }
+    return result;
+}
+
+int main(){
+    // 修正：先声明Grid类型的grid变量
+    Grid grid;
+
+    // 1) 构造小地图:'.'可走，'#'障碍（每行长度统一，避免越界）
+    grid.g = {
+        "..........",
+        ".####.....",
+        "..........",
+        ".....####.",
+        ".........."
+    };
+
+    // 2) 计算宽高
+    grid.H = (int)grid.g.size();       // 行数=高
+    grid.W = (int)grid.g[0].size();    // 列数=宽
+
+
+    Pos cur{0, 0};
+
+    cout << "Map:\n";
+    grid.print();
+    cout << "\n";
+
+    cout << "Current: (" << cur.x << "," << cur.y << ")\n";
+    vector<Pos> nb = getNeighbors(grid, cur);
+
+    cout << "Neighbors (" << nb.size() << "):\n";
+    for (int i = 0; i < (int)nb.size(); i++) {
+        cout << "  (" << nb[i].x << "," << nb[i].y << ")\n";
+    }
+
+    return 0;
+}
