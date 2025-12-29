@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <queue>
+#include <unordered_map>
 
 using namespace std;
 
@@ -42,7 +44,22 @@ struct Grid{
     }
 };
 
-/* 生成下一步候选位置（4邻接+等待）
+//---------关键：时空状态（x,y,t）-------
+struct State{
+    int x,y,t;
+    bool operator==(const State& o) const { return x == o.x 
+        && y == o.y && t == o.t; }
+};
+
+// unordered_map 需要 hash:我们把（x,y,t）打包到size_t
+struct StateHash {
+    size_t operator()(const State& s) const noexcept {
+        // 简单打包：t 放高位，x,y 放低位（这里假设不会太大）
+        return ((size_t)s.t << 32) ^ ((size_t)s.x << 16) ^ (size_t)s.y;
+    }
+};
+
+/* 生成下一步候选位置（4邻接+等待,t在外层+1）
     返回值是 vector<Pos>（动态数组）
 */
 vector<Pos> getNeighbors(const Grid& grid, const Pos& cur){
@@ -50,17 +67,26 @@ vector<Pos> getNeighbors(const Grid& grid, const Pos& cur){
     const int dx[5] = {1,-1,0,0,0};
     const int dy[5] = {0,0,1,-1,0};
 
-    vector<Pos> result;
+    vector<Pos> res;
     for (int k = 0; k < 5; k++){
         int nx = cur.x + dx[k];
         int ny = cur.y + dy[k];
         if (grid.passable(nx,ny)){
-            result.push_back(Pos{nx,ny}); //花括号初试后一个Pos
+            res.push_back(Pos{nx,ny}); //花括号初试后一个Pos
         }
     }
-    return result;
+    return res;
 }
 
+/*
+    最小的 Space-Time BFS(无约束版)
+    限制最大时间 maxT，避免无限等待
+*/
+vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
+    queue<State> q;
+
+    // visiter / parent : 记录回溯路径
+}
 int main(){
     // 修正：先声明Grid类型的grid变量
     Grid grid;
