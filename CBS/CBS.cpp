@@ -86,7 +86,33 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
     queue<State> q;
 
     // visiter / parent : 记录回溯路径
+    unordered_map<State, State, StateHash> parent;
+    unordered_map<State, bool, StateHash> visited;
+
+    State s{start.x, start.y, 0};
+    q.push(s);
+    visited[s] = true;
+
+    State goalState{-1,-1,-1};//记录目标状态
+    bool found = false;
+
+    while (!q.empty()){
+        State cur = q.front(); q.pop();
+
+        // 到达目标：停止
+        if (cur.x == goal.x && cur.y == goal.y){
+            goalState = cur;
+            found = true;
+            break;
+        }
+
+        if (cur.t >= maxT) continue; // 超过最大时间，跳过
+
+        //拓展下一步（t+1）
+        
+    }
 }
+
 int main(){
     // 修正：先声明Grid类型的grid变量
     Grid grid;
