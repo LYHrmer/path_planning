@@ -61,6 +61,11 @@ struct StateHash {
     }
 };
 
+// 计算曼哈顿距离
+int manhattan(const Pos& a, const Pos& b){
+    return abs(a.x - b.x) + abs(a.y - b.y);
+}
+
 /* 生成下一步候选位置（4邻接+等待,t在外层+1）
     返回值是 vector<Pos>（动态数组）
 */
@@ -145,6 +150,30 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
   - f = g + h
 */
 vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
+
+    // 优先队列节点：保存状态以及g,f值
+    struct Node{
+        State s;
+        int g;//实际代价
+        int f;//估计总代价
+    };
+
+    //priority_queue 默认弹出"最大"的，所以比较器要写成：f 更小优先
+    struct Cmp{
+        bool operator()(const Node& a, const Node& b) const{
+            if (a.f != b.f) return a.f > b.f; // f 小的优先
+            return a.g > b.g; // 同f时可选：g大优先
+        }
+    };
+
+    priority_queue<Node, vector<Node>,Cmp> open;
+
+    unordered_map<State, int, StateHash> bestG; //记录每个state的最小G
+    unordered_map<State, State, StateHash> parent; //回溯
+    
+    State s0{start.x, start.y, 0};
+    bestG[s0] = 0;
+    open.push(Node{s0,0,manhattan(start,goal)});
 
     return {};
 }
