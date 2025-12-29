@@ -4,6 +4,7 @@
 #include <string>
 #include <queue>
 #include <unordered_map>
+#include <cmath>
 
 using namespace std;
 
@@ -137,6 +138,17 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
     return rev;
 }
 
+/*
+  Space-Time A*（无约束版）
+  - g = 走了多少步（每步+1）
+  - h = 曼哈顿距离到目标
+  - f = g + h
+*/
+vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
+
+    return {};
+}
+
 int main(){
     // 修正：先声明Grid类型的grid变量
     Grid grid;
@@ -175,6 +187,6 @@ int main(){
     for (int t = 0; t < (int)path.size(); t++) {
         cout << "t=" << t << " (" << path[t].x << "," << path[t].y << ")\n";
     }
-    
+
     return 0;
 }
