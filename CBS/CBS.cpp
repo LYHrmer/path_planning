@@ -194,7 +194,7 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
   - f = g + h
   在拓展时检查 vertex/edge 约束
 */
-vector <Pos> spaceTimeAStarConstrained(const Grid& grid, Pos start, Pos goal, int maxT, const ConstraintTable& ct){
+vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT, const ConstraintTable& ct){
 
     // 优先队列节点：保存状态以及g,f值
     struct Node{
@@ -301,9 +301,19 @@ int main(){
     grid.print(); //打印地图
     cout << "\n";
 
-    // BFS 最大时间上限，先随便给个够大的（以后做 CBS 会用更聪明的 horizon）
+    // -------- 演示：构造一个约束表 --------
+    ConstraintTable ct;
+
+    // 禁止在 t=6 时到达 (5,1)
+    // 你之前那条路径 t=6 正好是 (5,1)，所以这会迫使 A* 改路
+    ct.forbV.insert(keyVertex(5, 1, 6));
+
+    // 也可以演示边约束，比如禁止 t=0 从 (0,0)->(1,0)
+    // ct.forbE.insert(keyEdge(0,0,1,0,0));
+
+    //最大时间上限，先随便给个够大的
     int maxT = 50;
-    vector<Pos> path = spaceTimeAStarConstrained(grid, start, goal, maxT, ct);
+    vector<Pos> path = spaceTimeAStar(grid, start, goal, maxT, ct);
 
 
     if (path.empty()) {
