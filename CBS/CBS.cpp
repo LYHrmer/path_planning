@@ -90,7 +90,7 @@ struct State{
 
 // unordered_map 需要 hash:我们把（x,y,t）打包到size_t
 struct StateHash {
-    size_t operator()(const State& s) const noexcept {
+    size_t operator()(const State& s) const noexcept  {
         // 简单打包：t 放高位，x,y 放低位（这里假设不会太大）
         return ((size_t)s.t << 32) ^ ((size_t)s.x << 16) ^ (size_t)s.y;
     }
@@ -99,6 +99,15 @@ struct StateHash {
 // 计算曼哈顿距离
 int manhattan(const Pos& a, const Pos& b){
     return abs(a.x - b.x) + abs(a.y - b.y);
+}
+
+//约束检查：点约束
+bool violatesVertex(const ConstraintTable& ct, int x, int y, int t){
+    return ct.forbV.count( keyVertex(x,y,t)) > 0;
+}
+//约束检查：边约束（注意 t 指的是这次移动的起始时间）
+bool violatesEdge(const ConstraintTable& ct, int x1,int y1,int x2,int y2,int t) {
+    return ct.forbE.count(keyEdge(x1, y1, x2, y2, t)) > 0;
 }
 
 /* 生成下一步候选位置（4邻接+等待,t在外层+1）
@@ -179,12 +188,13 @@ vector<Pos> spaceTimeBFS(const Grid& grid, Pos start, Pos goal, int maxT){
 }
 
 /*
-  Space-Time A*（无约束版）
+  Space-Time A*（约束版）
   - g = 走了多少步（每步+1）
   - h = 曼哈顿距离到目标
   - f = g + h
+  在拓展时检查 vertex/edge 约束
 */
-vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
+vector <Pos> spaceTimeAStarConstrained(const Grid& grid, Pos start, Pos goal, int maxT, const ConstraintTable& ct){
 
     // 优先队列节点：保存状态以及g,f值
     struct Node{
@@ -202,10 +212,12 @@ vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
     };
 
     priority_queue<Node, vector<Node>,Cmp> open;
-
     unordered_map<State, int, StateHash> bestG; //记录每个state的最小G
     unordered_map<State, State, StateHash> parent; //回溯
-    
+ 
+    //起点也要检查点约束（t=0 时不能站在被禁格）
+    if (violatesVertex(ct, start.x, start.y, 0)) return{};
+
     State s0{start.x, start.y, 0};
     bestG[s0] = 0;
     open.push(Node{s0,0,manhattan(start,goal)});
@@ -237,6 +249,13 @@ vector <Pos> spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT){
         //拓展邻居（t+1）
         vector<Pos> nb = getNeighbors(grid, Pos{cs.x, cs.y});
         for(const auto& np : nb){
+            int nt = cs.t +1;
+
+            // 1) 检查点约束：下一时刻 nt 不能到达（np.x,np.y）
+            if (violatesVertex(ct, np.x, np.y, nt)) continue;
+            // 2) 检查边约束：这次移动cs(t)->np(t+1) 是否被禁止
+            if (violatesEdge(ct, cs.x, cs.y, np.x, np.y, cs.t)) continue;
+
             State ns{np.x, np.y, cs.t+1};
             int ng = cur.g +1; //每步代价＋1
 
@@ -284,7 +303,8 @@ int main(){
 
     // BFS 最大时间上限，先随便给个够大的（以后做 CBS 会用更聪明的 horizon）
     int maxT = 50;
-    vector<Pos> path = spaceTimeAStar(grid, start, goal, maxT);
+    vector<Pos> path = spaceTimeAStarConstrained(grid, start, goal, maxT, ct);
+
 
     if (path.empty()) {
         cout << "No path within maxT=" << maxT << "\n";
