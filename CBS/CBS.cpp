@@ -4,6 +4,7 @@
 #include <string>
 #include <queue>
 #include <unordered_map>
+#include <unordered_set>
 #include <cmath>
 
 using namespace std;
@@ -45,6 +46,29 @@ struct Grid{
         }
     }
 };
+
+//----------CBS 底层需要的约束结构 -------
+enum class ConstraintType{
+    Vertex, //顶点约束
+    Edge   //边约束
+};
+
+struct Constraint{
+    int agent; //哪个 agent (本步只有1个，可先写死为0)
+    ConstraintType type; //约束类型
+    int t; //时间
+    int x1,y1; //Vertex:禁止到达（x1,y1）
+    int x2,y2; //Edge:禁止从（x1,y1）到（x2，y2）
+};
+
+
+// 把 (x,y,t) 打包成一个 long long，便于放进 unordered_set
+long long keyVertex(int x, int y, int t){
+    return ((long long)t << 40)^((long long)x << 20)^(long long)y;//假设x，y，z都不会太大
+}
+
+// 把边约束 (x1,y1,x2,y2,t) 打包
+long long
 
 //---------关键：时空状态（x,y,t）-------
 struct State{
