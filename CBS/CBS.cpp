@@ -243,13 +243,13 @@ int main(){
     Pos start{0,0};
     Pos goal{9,4};
 
-    cout << "Map:\n";
-    grid.print();
+    cout << "Map:\n";  
+    grid.print(); //打印地图
     cout << "\n";
 
     // BFS 最大时间上限，先随便给个够大的（以后做 CBS 会用更聪明的 horizon）
     int maxT = 50;
-    vector<Pos> path = spaceTimeBFS(grid, start, goal, maxT);
+    vector<Pos> path = spaceTimeAStar(grid, start, goal, maxT);
 
     if (path.empty()) {
         cout << "No path within maxT=" << maxT << "\n";
