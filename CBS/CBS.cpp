@@ -68,7 +68,18 @@ long long keyVertex(int x, int y, int t){
 }
 
 // 把边约束 (x1,y1,x2,y2,t) 打包
-long long
+long long keyEdge(int x1, int y1, int x2, int y2, int t){
+    long long k = (long long)t; //时间放高位
+    k = (k<<12) ^ x1; k = (k<<12) ^ y1; 
+    k = (k<<12) ^ x2; k = (k<<12) ^ y2;
+    return k;
+}
+
+// 一个 agent 的“约束表”：快速查点约束/边约束
+struct ConstraintTable{
+    unordered_set<long long> forbV;//顶点集合约束
+    unordered_set<long long> forbE;//边集合约束
+};
 
 //---------关键：时空状态（x,y,t）-------
 struct State{
