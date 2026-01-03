@@ -77,6 +77,41 @@ Conflict detectFirstConflict(const vector<Path>& paths){
                 }    
             }
         } 
-    }   
+    }  
+    return Conflict{}; 
 }
 
+int main() {
+    // 手工造两条“会冲突”的路径，便于测试
+
+    // agent0: (0,0)->(1,0)->(2,0)
+    Path p0 = { {0,0}, {1,0}, {2,0} };
+
+    // agent1: (2,0)->(1,0)->(0,0)
+    Path p1 = { {2,0}, {1,0}, {0,0} };
+
+    // t=1 时两者都在 (1,0) -> 点冲突
+    // 同时也存在边冲突 (0,0)<->(2,0) 不成立，这里主要演示点冲突
+
+    vector<Path> paths = { p0, p1 };
+
+    Conflict c = detectFirstConflict(paths);
+
+    if (!c.exists) {
+        cout << "No conflict.\n";
+        return 0;
+    }
+
+    if (!c.isEdge) {
+        cout << "Vertex conflict: a=" << c.a << " b=" << c.b
+             << " t=" << c.t
+             << " cell=(" << c.x << "," << c.y << ")\n";
+    } else {
+        cout << "Edge conflict: a=" << c.a << " b=" << c.b
+             << " t=" << c.t
+             << " a:(" << c.ax1 << "," << c.ay1 << ")->(" << c.ax2 << "," << c.ay2 << ")"
+             << " b:(" << c.ax2 << "," << c.ay2 << ")->(" << c.ax1 << "," << c.ay1 << ")\n";
+    }
+
+    return 0;
+}
