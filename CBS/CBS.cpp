@@ -11,9 +11,7 @@ using namespace std;
 
 // 修正：结构体名统一为Pos（大写P），和main里一致
 struct Pos{
-    int x;
-    int y;
-
+    int x , y;
     // C++ 运算符重载；以后可以直接写(a=b)
     bool operator==(const Pos& other) const{
         return x == other.x && y == other.y;
