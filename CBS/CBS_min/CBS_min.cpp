@@ -247,6 +247,15 @@ static Path spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT, cons
     return {};
 }
 
+//把所有路径补齐到同一长度：短的用最后一个位置重复填充（表示到达后等待）
+static void padPathsToSameLength(vector<Path>& paths){
+    int T = 0;
+    for (auto &p : paths) T = max(T,(int)p.size());
+    for (auto &p : paths){
+        while ((int)p.size() < T) p.push_back(p.back()); 
+    }
+}
+
 /* ========== 4) 冲突检测（CBS 高层） ========== */
 // 获取路径在时间t的位置（带边界检查）
 // 如果t小于0，返回路径的第一个位置（起点）
@@ -402,6 +411,7 @@ static bool CBS(const Grid& grid,
     for(int i=0;i<n;i++){
         if(!replanAgent(root,i)) return false;  // 如果任何一个智能体规划失败，整个问题无解
     }
+    padPathsToSameLength(root.paths);
     root.cost = sumOfCosts(root.paths);  // 计算根节点的总代价
 
     // 创建优先队列（开放列表），存储待扩展的约束树节点
@@ -458,6 +468,8 @@ static bool CBS(const Grid& grid,
             // 只重规划被约束的智能体（其他智能体路径不变）
             if(!replanAgent(child, agent)) continue;  // 如果重规划失败，跳过这个子节点
 
+            padPathsToSameLength(child.paths);
+
             // 计算子节点的总代价
             child.cost = sumOfCosts(child.paths);
 
@@ -494,7 +506,7 @@ int main(){
     // 智能体0：从左上角(0,0)到右下角(9,4)
     // 智能体1：从左下角(0,4)到右上角(9,0)
     vector<Pos> starts = { {0,0}, {0,4} };
-    vector<Pos> goals  = { {9,4}, {9,0} };
+    vector<Pos> goals  = { {9,4}, {2,4} };
 
     // 存储解决方案的路径
     vector<Path> sol;
