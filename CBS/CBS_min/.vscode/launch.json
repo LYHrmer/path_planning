@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug CBS_min (MinGW gdb)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}\\CBS_min.exe",
+      "args": [],
+      "stopAtEntry": true,
+      "cwd": "${workspaceFolder}",
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:\\mingw64\\bin\\gdb.exe",
+      "environment": [
+        { "name": "PATH", "value": "${workspaceFolder};C:\\mingw64\\bin;${env:PATH}" }
+      ],
+      "setupCommands": [
+        { "text": "-enable-pretty-printing" }
+      ]
+    }
+  ]
+}
+

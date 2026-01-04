@@ -473,6 +473,7 @@ static bool CBS(const Grid& grid,
 
 /* ========== 6) main：测试 CBS ========== */
 int main(){
+    volatile int dbg = 0; // 调试用的变量，防止编译器优化掉某些代码
     // 创建网格地图
     Grid grid;
     // 初始化网格内容：5行10列的网格
