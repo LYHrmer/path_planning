@@ -543,7 +543,7 @@ int main(){
     cout << "CBS solution found!\n";
     for(int i=0;i<(int)sol.size();i++){
         cout << "Agent " << i << ":\n";
-        输出该智能体在每个时间步的位置
+        //输出该智能体在每个时间步的位置
         for(int t=0;t<(int)sol[i].size();t++){
             cout << "  t="<<t<<" ("<<sol[i][t].x<<","<<sol[i][t].y<<")\n";
         }
