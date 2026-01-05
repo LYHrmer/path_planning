@@ -146,6 +146,16 @@ static ConstraintTable buildCT(const vector<Constraint>& cons, int agent){
     return ct;  // 返回构建好的约束表
 }
 
+//到达goal后，从t到H期间都要能合法停留（点约束/边约束都要检查）
+static bool goalSafeToH(const ConstraintTable& ct,const Pos& goal,int t,int H){
+    for(int tau = t; tau <= H; tau++){
+        if (violatesVertex(ct, goal.x, goal.y, tau)) return false;
+        // tau -> tau+1 的边约束检查
+        if (tau < H && violatesEdge(ct, goal.x, goal.y, goal.x, goal.y, tau)) return false;
+    }
+    return true;
+}
+
 // 带约束的时空A*算法：在考虑约束的情况下寻找从起点到目标的最短路径
 // 参数：网格地图、起点、目标点、最大时间步、约束表
 // 返回：找到的路径（Pos的向量），如果找不到返回空路径
