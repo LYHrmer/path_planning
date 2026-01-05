@@ -201,22 +201,29 @@ static Path spaceTimeAStar(const Grid& grid, Pos start, Pos goal, int maxT, cons
         // 跳过无效节点：如果当前g值不是最佳g值，说明这个节点已经过时
         if(cur.g!=bestG[cs]) continue;
 
-        // 检查是否到达目标：位置匹配（不检查时间，因为到达后可以等待）
+    
         if(cs.x==goal.x && cs.y==goal.y){
-            // 回溯构建路径
-            vector<Pos> rev;  // 反向路径
-            State p=cs;  // 从目标状态开始回溯
+            //只有当 goal 从当前时刻到 maxT 都能合法等待，才算真正找到可行解
+            if(goalSafeToH(ct,goal,cs.t,maxT))
+            {
+                // 回溯构建路径
+                vector<Pos> rev;  // 反向路径
+                State p=cs;  // 从目标状态开始回溯
 
-            while(true){
-                // 将当前位置加入路径
-                rev.push_back(Pos{p.x,p.y});
-                if(p.t==0) break;  // 回溯到时间0（起点）时停止
-                p=parent[p];  // 获取父状态
-            }
+                 while(true){
+                    // 将当前位置加入路径
+                    rev.push_back(Pos{p.x,p.y});
+                    if(p.t==0) break;  // 回溯到时间0（起点）时停止
+                    p=parent[p];  // 获取父状态
+                }
 
-            // 反转路径（从起点到目标）
-            reverse(rev.begin(),rev.end());
-            return rev;
+                // 反转路径（从起点到目标）
+                reverse(rev.begin(),rev.end());
+                //返回前补齐到maxT+1长度，保证后续处理一致性
+                while ((int)rev.size() < maxT + 1) rev.push_back(rev.back());
+                return rev;
+            }  
+             // 否则不能直接返回，继续搜索其他到达方式/到达时刻
         }
 
         // 如果达到最大时间限制，不再扩展
@@ -411,11 +418,13 @@ static bool CBS(const Grid& grid,
         node.paths[agent] = std::move(p);
         return true;
     };
-
+    
     // 创建根节点：没有任何约束
     CTNode root;
     root.id = nodeId++;        // 分配节点ID
     root.paths.resize(n);      // 为n个智能体预留路径空间
+
+    root.constraints.push_back(Constraint{1, ConstraintType::Vertex, 5, 2,4, 0,0});//约束的意思是在时间5时刻，智能体1不能出现在位置(2,4)
 
     // 为每个智能体规划初始路径（无约束）
     for(int i=0;i<n;i++){
@@ -535,8 +544,12 @@ int main(){
     for(int i=0;i<(int)sol.size();i++){
         cout << "Agent " << i << ":\n";
         // 输出该智能体在每个时间步的位置
-        for(int t=0;t<(int)sol[i].size();t++){
-            cout << "  t="<<t<<" ("<<sol[i][t].x<<","<<sol[i][t].y<<")\n";
+        // for(int t=0;t<(int)sol[i].size();t++){
+        //     cout << "  t="<<t<<" ("<<sol[i][t].x<<","<<sol[i][t].y<<")\n";
+        // }
+        int showT = 15;
+        for (int t = 0; t < min((int)sol[i].size(), showT); t++) {
+            cout << "  t=" << t << " (" << sol[i][t].x << "," << sol[i][t].y << ")\n";
         }
     }
 
