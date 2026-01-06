@@ -164,6 +164,13 @@ static int maxConstraintTimeForAgent(const vector<Constraint>& cons,int agent){
     return mx;
 }
 
+static int maxConstraintTimeAll(const vector<Constraint>& cons){
+    int mx = 0;
+    for (const auto& c : cons) mx = max(mx, c.t);
+    return mx;
+}
+
+
 static int lowerBoundLen(const vector<Pos>& start, const vector<Pos>& goal){
     int lb = 0;
     for(int i = 0; i < (int)start.size(); i++){
@@ -428,20 +435,33 @@ static bool CBS(const Grid& grid,
         // 为该智能体构建约束表
         ConstraintTable ct = buildCT(node.constraints, agent);
 
-        int lb = lowerBoundLen(starts,goals);
-        int mxC = maxConstraintTimeForAgent(node.constraints,agent);
-        int maxT = max(lb,mxC)+10;
+    int lb = lowerBoundLen(starts, goals);                 // 最短路下界
+    int curMS = 0;
+    if (!node.paths.empty()) curMS = makespan(node.paths); // 当前节点已有解的 makespan（root 初始化时可能还是空/未填满）
 
-        // 使用带约束的A*算法规划路径
+    int mxA = maxConstraintTimeForAgent(node.constraints, agent); // 该 agent 最大约束时间
+    int mxAll = maxConstraintTimeAll(node.constraints);           // 整个节点最大约束时间（可选但很稳）
+
+    int buffer = 10;
+
+    // 解释：
+    // - 至少要覆盖到当前解的 makespan（不然会搜太短）
+    // - 至少要覆盖到约束时间（否则 goal-safe 检查没意义）
+    // - 至少要覆盖到最短路下界（否则本来就到不了）
+    int maxT = max({lb, curMS, mxA, mxAll}) + buffer;
+
+    for (int attempt = 0; attempt < 3; attempt++) {   // 最多扩 3 次
+        cout << "[replan] agent=" << agent << " maxT=" << maxT << "\n";
         Path p = spaceTimeAStar(grid, starts[agent], goals[agent], maxT, ct);
+        if (!p.empty()) {
+            node.paths[agent] = std::move(p);
+            return true;
+        }
+        maxT += 10; // 不够就再加 10
+    }
 
-        // 如果找不到路径，返回失败
-        if(p.empty()) return false;
+    return false;
 
-        // 将规划好的路径移动到节点的路径数组中
-        // std::move是C++11的移动语义，避免不必要的拷贝
-        node.paths[agent] = std::move(p);
-        return true;
     };
     
     // 创建根节点：没有任何约束
