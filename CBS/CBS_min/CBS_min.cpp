@@ -156,6 +156,22 @@ static bool goalSafeToH(const ConstraintTable& ct,const Pos& goal,int t,int H){
     return true;
 }
 
+static int maxConstraintTimeForAgent(const vector<Constraint>& cons,int agent){
+    int mx = 0;
+    for (const auto& c : cons){
+        if (c.agent == agent) mx = max(mx,c.t);
+    }
+    return mx;
+}
+
+static int lowerBoundLen(const vector<Pos>& start, const vector<Pos>& goal){
+    int lb = 0;
+    for(int i = 0; i < (int)start.size(); i++){
+        lb = max(lb,abs(start[i].x - goal[i].x)+abs(start[i].y - goal[i].y));
+    }
+    return lb;
+}
+
 // 带约束的时空A*算法：在考虑约束的情况下寻找从起点到目标的最短路径
 // 参数：网格地图、起点、目标点、最大时间步、约束表
 // 返回：找到的路径（Pos的向量），如果找不到返回空路径
@@ -365,6 +381,14 @@ static int sumOfCosts(const vector<Path>& paths){
     return s;
 }
 
+static int makespan(const vector<Path>& paths){
+    int ms=0;
+    for(const auto& p: paths) {
+        ms = max(ms, (int)p.size()-1);
+    }
+    return ms;
+}
+
 /* ========== 5) CBS 高层：CTNode + open list ========== */
 // 约束树节点（CT = Constraint Tree）
 // CBS算法构建一棵约束树，每个节点包含一组约束和对应的路径集合
@@ -404,8 +428,9 @@ static bool CBS(const Grid& grid,
         // 为该智能体构建约束表
         ConstraintTable ct = buildCT(node.constraints, agent);
 
-        // 最大时间限制（教学版硬编码为80，实际应根据问题规模动态计算）
-        int maxT = 80;
+        int lb = lowerBoundLen(starts,goals);
+        int mxC = maxConstraintTimeForAgent(node.constraints,agent);
+        int maxT = max(lb,mxC)+10;
 
         // 使用带约束的A*算法规划路径
         Path p = spaceTimeAStar(grid, starts[agent], goals[agent], maxT, ct);
