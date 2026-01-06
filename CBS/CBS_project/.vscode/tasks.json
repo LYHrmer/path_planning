@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build CBS",
+      "type": "process",
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": ["/c", "${workspaceFolder}\\build_cbs.cmd"],
+      "problemMatcher": ["$gcc"],
+      "group": { "kind": "build", "isDefault": true }
+    }
+  ]
+}
